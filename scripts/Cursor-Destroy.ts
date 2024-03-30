@@ -39,7 +39,7 @@ function main() {
     const blockX = center.getX();
     const blockY = center.getY();
     const blockZ = center.getZ();
-    const radius = 300;
+    const radius = 100;
     let count = 0;
 
     //initialize buffer array for non-gravel blocks
@@ -78,7 +78,7 @@ function main() {
         if(blockType == "minecraft:air") continue;
         Chat.say(`/setblock ${nonGravelBuffer[i].getX()} ${nonGravelBuffer[i].getY()} ${nonGravelBuffer[i].getZ()} air`);
         count++;
-        if(count % 100 == 0) Time.sleep(1);
+        if(count % 200 == 0) Time.sleep(1);
     }
 
     Time.sleep(100);
