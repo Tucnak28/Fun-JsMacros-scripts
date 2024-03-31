@@ -2,7 +2,7 @@
 
 // Define the function that will find the highest non-air block
 function findHighestNonAirBlock(x, z) {
-  let y = 150;
+  let y = 300;
   while (y > -64 && World.getBlock(x, y, z).getId() == "minecraft:air") { //|| World.getBlock(x, y, z).getId() == "minecraft:fire") {
     y--;
   }
@@ -13,18 +13,19 @@ function findHighestNonAirBlock(x, z) {
 let placedBlocks = new Map();
 
 // Set the radius of the block to 100 blocks
-const range = 50;
+const range = 100;
 
-const tickInterval = 1;
+
+let count = 0;
 
 // Create an array of blocks to choose from for the block
 const customBlocks = [
-  "minecraft:sculk_sensor"
-  //"minecraft:sponge"
-  //"minecraft:netherrack",
-  //"minecraft:magma_block",
-  //"minecraft:nether_quartz_ore",
-  //"minecraft:chiseled_nether_bricks"
+  //"minecraft:sculk_sensor"
+  "minecraft:tnt",
+  "minecraft:netherrack",
+  "minecraft:magma_block",
+  "minecraft:nether_quartz_ore",
+  "minecraft:chiseled_nether_bricks"
 ];
 
 const allBlocks = [
@@ -156,7 +157,6 @@ const allBlocks = [
 ]
 
 
-
 function blockLevitation() {
   // Get the player's position
   const playerPos = Player.getPlayer().getBlockPos();
@@ -165,7 +165,7 @@ function blockLevitation() {
   let x = Math.floor(playerPos.getX() + Math.random() * range - range / 2);
   let z = Math.floor(playerPos.getZ() + Math.random() * range - range / 2);
   //let y = Math.floor(playerPos.y + Math.random() * radius - radius / 2);
-  let y = findHighestNonAirBlock(x, z)
+  let y = findHighestNonAirBlock(x, z);
   
   // Check if the block at the random coordinates has already been placed
   const key = `${x}, ${y}, ${z}`;
@@ -173,13 +173,19 @@ function blockLevitation() {
     return;
   }
   
-  
+  let xR = Math.floor(playerPos.getX() + Math.random() * range - range / 2);
+  let zR = Math.floor(playerPos.getZ() + Math.random() * range - range / 2);
+  let yR = findHighestNonAirBlock(x, z);
+
+  if(x == xR && y == yR && z == zR) return;
+
 
   // Choose a random block from the array
   const Block = customBlocks[Math.floor(Math.random() * customBlocks.length)];
 
   // Set the block at the random coordinates to the chosen block
-  Chat.say(`/clone ${x} ${y} ${z} ${x} ${y} ${z} ${x} ${y + 2} ${z}`);
+  //Chat.say(`/clone ${x} ${y} ${z} ${x} ${y} ${z} ${x} ${y + 50} ${z}`);
+  Chat.say(`/clone ${x} ${y} ${z} ${x} ${y} ${z} ${xR} ${yR} ${zR}`);
   Chat.say(`/setblock ${x} ${y} ${z} air`);
 
   // Add the block position to the hash map
@@ -220,8 +226,11 @@ function createRandomBlock() {
 // Set the main function to run every tick
 while(1) {
   //createRandomBlock()
+
   blockLevitation();
-  Time.sleep(tickInterval)
+
+  if ((count + 1) % 50 === 0) Time.sleep(1)
+  count++;
 }
 
 

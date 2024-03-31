@@ -39,48 +39,40 @@ function main() {
     const blockX = center.getX();
     const blockY = center.getY();
     const blockZ = center.getZ();
-    const radius = 100;
+    const radius = 50;
     let count = 0;
+    
 
     //initialize buffer array for non-gravel blocks
-    let nonGravelBuffer = [];
     //loop through all blocks within the radius
     for(let y = radius; y >= -radius; y--) {
         for(let x = -radius; x <= radius; x++) {
             for(let z = -radius; z <= radius; z++) {
                 //if block is within the spherical radius
-                if(x*x + y*y + z*z <= radius*radius) {
+                const distanceSquared = x*x + y*y + z*z;
+
+                if(distanceSquared <= radius*radius) {
                     const block = World.getBlock(blockX+x, blockY+y, blockZ+z);
+
                     if(!block) continue;
+
                     const blockType = block.getId();
-                    //if it's gravel, remove it directly
-                    if(blockType === "minecraft:gravel" || blockType === "minecraft:water" || blockType === "minecraft:lava") {
-                        Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} air`);
-                    } else {
-                        //otherwise, add it to the buffer array of non-gravel blocks
-                        nonGravelBuffer.push(block);
-                    }
+
+                    if(blockType == "minecraft:air" || blockType == "minecraft:gold") continue;
+                    
+                    const isOnSurface = Math.abs(distanceSquared - radius * radius) < radius/2;
+                    
+                    if(isOnSurface) Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} minecraft:gold_block`);
+                    else Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} air`);
+                    
+                    
                     count++;
-                    if(count % 5000 == 0) Time.sleep(1);
+                    if(count % 250 == 0) Time.sleep(1);
                 }
             }
         }
+        if(y % 20 == 0) Player.takeScreenshot( "./", null);
     }
-    
-    // Shuffle the array to randomize the order
-    nonGravelBuffer.sort(() => Math.random() - 0.5);
-
-    //loop over non-gravel buffer to replace all blocks with air
-    count = 0;
-    for(let i = nonGravelBuffer.length - 1; i >= 0; i--) {
-        const blockType = nonGravelBuffer[i].getId();
-        //skip if it's already air
-        if(blockType == "minecraft:air") continue;
-        Chat.say(`/setblock ${nonGravelBuffer[i].getX()} ${nonGravelBuffer[i].getY()} ${nonGravelBuffer[i].getZ()} air`);
-        count++;
-        if(count % 200 == 0) Time.sleep(1);
-    }
-
     Time.sleep(100);
     Chat.log("Blocks destroyed: " + count);
 }

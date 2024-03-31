@@ -9,6 +9,7 @@ class arrayFIFO {
         const stringValue = JSON.stringify(value); // Convert the array to a string
         // Check if the string value already exists in the array
         if (this.array.includes(stringValue)) {
+            //Chat.log(value);
             return;
         }
 
@@ -16,7 +17,7 @@ class arrayFIFO {
         if (this.array.length >= this.maxSize) {
             const coordinations = JSON.parse(this.array.shift()); // Remove the oldest element
             //Chat.log(this.array.length);
-            placeBlock(coordinations[0], coordinations[1], coordinations[2]);
+            //placeBlock(coordinations[0], coordinations[1], coordinations[2]);
         }
         
         // Add new element to the end of the array
@@ -38,8 +39,8 @@ class arrayFIFO {
 
 
 
-const radius = 10;
-const length = 10;
+const radius = 2;
+const length = 100;
 
 
 
@@ -47,7 +48,8 @@ let count = 0;
 
 let liquids = []; 
 
-const SizeFIFO = radius*length/2;
+const SizeFIFO = radius*length;
+
 const planeFIFO = new arrayFIFO(SizeFIFO);
 
 function liquidCheck(block) {
@@ -97,9 +99,9 @@ function planeHash(center, normal, width, length) {
             const offsetZ = i * unitV1.z + j * unitV2.z;
 
             // Calculate final position of the block
-            const x = Math.round(centerX + offsetX);
-            const y = Math.round(centerY + offsetY);
-            const z = Math.round(centerZ + offsetZ);
+            const x = Math.floor(centerX + offsetX); //the floor is essential because math.round sets some numbers to -0.0
+            const y = Math.floor(centerY + offsetY);
+            const z = Math.floor(centerZ + offsetZ);
             
             
 
@@ -123,13 +125,26 @@ function planeHash(center, normal, width, length) {
 
             const coordinate = [x, y, z];
             planeFIFO.set(coordinate);
+
+            //Chat.say(planeFIFO.array.length.toString());
+            if (planeFIFO.array.length > 10) {
+                // Get the oldest element from the array
+                const coordinations = planeFIFO.get(0);
+                // Do something with the coordinations, for example:
+                placeBlock(coordinations[0], coordinations[1], coordinations[2]);
+                // Remove the oldest element from the array
+                planeFIFO.array.shift();
+            } else {
+                Time.sleep(10);
+            }
+            Time.sleep(1);
         }
     }
 }
 
 function placeBlock(x, y, z) {
     // Place a block at the specified coordinates
-    Chat.say(`/setblock ${Math.round(x)} ${Math.round(y)} ${Math.round(z)} air`);
+    Chat.say(`/setblock ${x} ${y} ${z} air`);
 }
 
 
@@ -149,6 +164,7 @@ function main() {
     let normalizedVectorArray = { x: normalizedVector[0], y: normalizedVector[1], z: normalizedVector[2]};
 
 
+    
     for (let i = 0; i < length; i+=0.2  ) {//i+=radius/1.5) {
         let currentPosition = [
             eyePos.getX() + normalizedVector[0] * i,

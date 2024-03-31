@@ -40,12 +40,12 @@ function summonLinearTNT(centerX, centerY, centerZ, numTNT, fuse) {
 
 // Event listener for mouse click
 function onMouseClick() {
-    const numCircTNT = 50;
+    const numCircTNT = 100;
     const numLineTNT = 50;
-    const fuseCircTNT = 1.2; //1.2 for superflat //1.4 default
+    const fuseCircTNT = 1.4; //1.2 for superflat //1.4 default
     const fuseLineTNT = 25;
     const circleCount = 10; //limit is 10
-    const plusArms = 10;
+    const plusArms = 20;
 
 // Calling the function
 

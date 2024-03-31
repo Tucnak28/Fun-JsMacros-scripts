@@ -1,8 +1,8 @@
 //The code calculates the line of sight from the player's position and systematically destroys blocks along that path within a specified radius, clearing obstructive terrain.
 
-let coordinatesToSetAir = {}; // Hash map to store unique coordinates
-const radius = 20;
-const length = 300;
+let blockDestroy = {}; // Hash map to store unique coordinates
+const radius = 50;
+const length = 100;
 
 function isInSphere(x, y, z, centerX, centerY, centerZ, radius) {
     const distanceSquared = (x - centerX) ** 2 + (y - centerY) ** 2 + (z - centerZ) ** 2;
@@ -25,7 +25,7 @@ function blocksHash(x, y, z) {
 
                 // Store the coordinates as a string in the hash map
                 const coordinateString = `${targetX},${targetY},${targetZ}`;
-                coordinatesToSetAir[coordinateString] = true;
+                blockDestroy[coordinateString] = true;
             }
         }
     }
@@ -83,7 +83,7 @@ function planeHash(center, normal, width, length) {
 
             // Store the coordinates as a string in the hash map
             const coordinateString = `${x},${y},${z}`;
-            coordinatesToSetAir[coordinateString] = true;
+            blockDestroy[coordinateString] = true;
 
         }
     }
@@ -108,7 +108,7 @@ function main() {
     let normalizedVectorArray = { x: normalizedVector[0], y: normalizedVector[1], z: normalizedVector[2]};
 
 
-    for (let i = 0; i < length; i+=0.1) {//i+=radius/1.5) {
+    for (let i = 0; i < length; i+=0.2) {//i+=radius/1.5) {
         let currentPosition = [
             eyePos.getX() + normalizedVector[0] * i,
             eyePos.getY() + normalizedVector[1] * i,
@@ -119,13 +119,14 @@ function main() {
 
         //blocksHash(currentPosition[0], currentPosition[1], currentPosition[2]);
 
+        //const custom = { x: 0, y: 0, z: 1 }; // Flat along the x and z axes (horizontal plane)
         planeHash(currentPosition, normalizedVectorArray, radius, radius);
     }
 
     const elapsedTime = (Date.now() - startTime) / 1000;
 
     // Convert the hash map keys (unique coordinates) back to array
-    const uniqueCoordinates = Object.keys(coordinatesToSetAir);
+    const uniqueCoordinates = Object.keys(blockDestroy);
 
     Chat.log("Calculations done: " + uniqueCoordinates.length + " blocks");
     Chat.log("Time: " + elapsedTime + "s");

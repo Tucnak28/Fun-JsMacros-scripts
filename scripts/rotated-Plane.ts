@@ -1,10 +1,51 @@
+class arrayFIFO {
+    constructor(maxSize) {
+        this.maxSize = maxSize;
+        this.array = [];
+    }
+
+    set(value) {
+        const stringValue = JSON.stringify(value); // Convert the array to a string
+        // Check if the string value already exists in the array
+        if (this.array.includes(stringValue)) {
+            return;
+        }
+
+        // If the array exceeds the maximum size, remove the oldest element
+        if (this.array.length >= this.maxSize) {
+            const coordinations = JSON.parse(this.array.shift()); // Remove the oldest element
+            //Chat.log(this.array.length);
+            placeBlock(coordinations[0], coordinations[1], coordinations[2]);
+        }
+        
+        // Add new element to the end of the array
+        this.array.push(stringValue); 
+    }
+
+    get(index) {
+        return JSON.parse(this.array[index]); // Convert the string back to an array
+    }
+
+    clear() {
+        // Postupně odstraňujte prvky, dokud není FIFO prázdné
+        while (this.array.length > 0) {
+            const coordinations = JSON.parse(this.array.shift()); // Odstranění prvku
+            placeBlock(coordinations[0], coordinations[1], coordinations[2]); // Umístění bloku odpovídajícího prvkům
+        }
+    }
+}
+
+const SizeFIFO = 1;
+const planeFIFO = new arrayFIFO(SizeFIFO);
+
 function createRotatedPlane(center, normal, width, length) {
     const centerX = center.getX();
-    const centerY = center.getY();
+    const centerY = center.getY() + 50;
     const centerZ = center.getZ();
     const normalX = normal.x;
     const normalY = normal.y;
     const normalZ = normal.z;
+
 
     // Calculate orthogonal vectors to the normal vector
     let v1, v2;
@@ -39,21 +80,22 @@ function createRotatedPlane(center, normal, width, length) {
             const offsetZ = i * unitV1.z + j * unitV2.z;
 
             // Calculate final position of the block
-            const x = centerX + offsetX;
-            const y = centerY + offsetY;
-            const z = centerZ + offsetZ;
-
-            //Chat.log(`${x}, ${y}, ${z}`);
+            const x = Math.round(centerX + offsetX);
+            const y = Math.round(centerY + offsetY);
+            const z = Math.round(centerZ + offsetZ);
 
             // Place the block at the calculated position
-            placeBlock(x, y, z);
+            //placeBlock(x, y, z);
+            const coordinate = [x, y, z];
+            planeFIFO.set(coordinate);
         }
     }
+    planeFIFO.clear();
 }
 
 function placeBlock(x, y, z) {
     // Place a block at the specified coordinates
-    Chat.say(`/setblock ${parseInt(x)} ${parseInt(y)} ${parseInt(z)} stone`);
+    Chat.say(`/setblock ${x} ${y} ${z} stone`);
 }
 
 
@@ -68,7 +110,7 @@ const vertical = { x: 0, y: 1, z: 0 };   // Flat along the y-axis (vertical plan
 
 // Other degrees or orientations
 const diagonal = { x: 1, y: 1, z: 1 };   // Diagonal orientation
-const customAngle = { x: -0.2, y: -0.8, z: 0.38 }; // Custom angle
+const customAngle = { x: -0.2, y: 0, z: 0.38 }; // Custom angle
 
 function main() {
     const center = Player.rayTraceBlock(2000, false);
@@ -85,7 +127,8 @@ function main() {
 
     normalizedVector = { x: normalizedVector[0], y: normalizedVector[1], z: normalizedVector[2]};
 
-    createRotatedPlane(center, normalizedVector, 50, 50);
+    createRotatedPlane(center, customAngle, 50, 50);
+
 }
 
 main();
