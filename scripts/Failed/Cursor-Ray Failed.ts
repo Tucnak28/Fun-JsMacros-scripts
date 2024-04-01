@@ -39,7 +39,7 @@ class arrayFIFO {
 
 
 
-const radius = 2;
+const radius = 5;
 const length = 100;
 
 
@@ -48,7 +48,7 @@ let count = 0;
 
 let liquids = []; 
 
-const SizeFIFO = radius*length;
+const SizeFIFO = 100000000000;
 
 const planeFIFO = new arrayFIFO(SizeFIFO);
 
@@ -127,7 +127,8 @@ function planeHash(center, normal, width, length) {
             planeFIFO.set(coordinate);
 
             //Chat.say(planeFIFO.array.length.toString());
-            if (planeFIFO.array.length > 10) {
+            if (planeFIFO.array.length > radius*radius*2) {
+                Chat.log(planeFIFO.array.length);
                 // Get the oldest element from the array
                 const coordinations = planeFIFO.get(0);
                 // Do something with the coordinations, for example:
@@ -135,9 +136,9 @@ function planeHash(center, normal, width, length) {
                 // Remove the oldest element from the array
                 planeFIFO.array.shift();
             } else {
-                Time.sleep(10);
+                //Time.sleep(1);
+                //Chat.log(planeFIFO.array.length);
             }
-            Time.sleep(1);
         }
     }
 }
