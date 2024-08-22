@@ -40,7 +40,7 @@ const planeFIFO = new arrayFIFO(SizeFIFO);
 
 function createRotatedPlane(center, normal, width, length) {
     const centerX = center.getX();
-    const centerY = center.getY() + 50;
+    const centerY = center.getY();
     const centerZ = center.getZ();
     const normalX = normal.x;
     const normalY = normal.y;
@@ -127,7 +127,7 @@ function main() {
 
     normalizedVector = { x: normalizedVector[0], y: normalizedVector[1], z: normalizedVector[2]};
 
-    createRotatedPlane(center, customAngle, 50, 50);
+    createRotatedPlane(center, normalizedVector, 50, 50);
 
 }
 

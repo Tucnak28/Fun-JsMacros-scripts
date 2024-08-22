@@ -39,7 +39,7 @@ function main() {
     const blockX = center.getX();
     const blockY = center.getY();
     const blockZ = center.getZ();
-    const radius = 50;
+    const radius = 300;
     let count = 0;
     
 
@@ -58,12 +58,12 @@ function main() {
 
                     const blockType = block.getId();
 
-                    if(blockType == "minecraft:air" || blockType == "minecraft:gold") continue;
+                    if(blockType == "minecraft:ai" || blockType == "minecraft:gold") continue;
                     
                     const isOnSurface = Math.abs(distanceSquared - radius * radius) < radius/2;
                     
                     if(isOnSurface) Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} minecraft:gold_block`);
-                    else Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} air`);
+                    else if(blockType != "minecraft:air")Chat.say(`/setblock ${block.getX()} ${block.getY()} ${block.getZ()} air`);
                     
                     
                     count++;

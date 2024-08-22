@@ -1,6 +1,6 @@
 //The code calculates the line of sight from the player's position and systematically destroys blocks along that path within a specified radius, clearing obstructive terrain.
-const radius = 100;
-const length = 300;
+const radius = 20;
+const length = 500;
 
 
 
@@ -65,11 +65,12 @@ function planeHash(center, normal, width, length) {
             if (y >= 319 || y <= -63) continue;
 
             const block = World.getBlock(x, y, z);
+            if (!block) continue;
             const blockType = block.getId();
             const blockStates = block.getBlockStateHelper().blocksMovement();
             count++;    
-            if (!block) continue;   
-            if (!blockStates) continue;
+            
+            if (!blockStates && blockType != "minecraft:water") continue;
             //if (blockType == 'minecraft:air') continue;
             //if (blockType == 'minecraft:grass') continue;
 
@@ -101,7 +102,7 @@ function main() {
     let normalizedVectorArray = { x: normalizedVector[0], y: normalizedVector[1], z: normalizedVector[2]};
 
 
-    for (let i = 0; i < length; i+=2  ) {//i+=radius/1.5) {
+    for (let i = 0; i < length; i+=0.2  ) {//i+=radius/1.5) {
         let currentPosition = [
             eyePos.getX() + normalizedVector[0] * i,
             eyePos.getY() + normalizedVector[1] * i,

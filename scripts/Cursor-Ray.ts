@@ -1,8 +1,8 @@
 //The code calculates the line of sight from the player's position and systematically destroys blocks along that path within a specified radius, clearing obstructive terrain.
 
 let blockDestroy = {}; // Hash map to store unique coordinates
-const radius = 50;
-const length = 100;
+const radius = 20;
+const length = 600;
 
 function isInSphere(x, y, z, centerX, centerY, centerZ, radius) {
     const distanceSquared = (x - centerX) ** 2 + (y - centerY) ** 2 + (z - centerZ) ** 2;

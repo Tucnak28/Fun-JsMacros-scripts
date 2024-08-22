@@ -1,4 +1,4 @@
-const center = Player.rayTraceBlock(1000, true);
+const center = Player.rayTraceBlock(10000, true);
 const blockX = center.getX();
 const blockY = center.getY();
 const blockZ = center.getZ();

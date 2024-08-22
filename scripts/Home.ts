@@ -1,1 +1,1 @@
-Chat.say("/home base")
+Chat.say("/home")
