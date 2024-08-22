@@ -1,0 +1,1 @@
+Chat.log(Client.getFPS().split(" ")[0]);
