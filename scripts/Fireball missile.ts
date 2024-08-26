@@ -59,6 +59,16 @@ function launchFireball(pitch, yaw) {
 }
 
 while (GlobalVars.getBoolean("Flamethrower")) {
-    launchFireball(Player.getPlayer().getPitch(), Player.getPlayer().getYaw())
+    const player = Player.getPlayer();
+
+    if(!player) continue;
+
+    const pitch = player.getPitch();
+    const yaw =  player.getYaw();
+
+    if(!pitch) continue;
+    if(!yaw) continue;
+
+    launchFireball(pitch, yaw);
     Client.waitTick(delay); // wait 1 second (synchronized to client ticks)
 }

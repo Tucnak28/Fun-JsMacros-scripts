@@ -6,7 +6,7 @@ function main() {
     const blockX = center.getX();
     const blockY = center.getY();
     const blockZ = center.getZ();
-    const radius = 600;
+    const radius = 300;
     const radiusSquared = radius * radius;
     let count = 0;
 
@@ -98,7 +98,7 @@ function main() {
                         Chat.say(`/setblock ${x} ${y} ${z} minecraft:sea_lantern`);
 
                     } else if (blockType !== "minecraft:air") {
-                        //Chat.say(`/setblock ${x} ${y} ${z} air`);
+                        Chat.say(`/setblock ${x} ${y} ${z} air`);
                     }
 
                     count++;

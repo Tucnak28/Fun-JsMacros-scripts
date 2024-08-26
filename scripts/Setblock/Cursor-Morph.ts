@@ -1,66 +1,74 @@
-//The code iteratively moves blocks inward within a cube-shaped region centered around the player's position, replacing each block with air while avoiding overlaps and optimizing performance through block movement.
+function moveBlockTowardsCenter(x, y, z, centerX, centerY, centerZ, occupied) {
+    if (World.getBlock(x, y, z).getId() === 'minecraft:air') return;
 
-function moveBlock(x, y, z, center, occupied) {
-    if(World.getBlock(x, y, z).getId() == 'minecraft:air') return;
-
-    const oldPos = [x, y, z];
-    if(x < center[0]) x++;
-    if(x > center[0]) x--;
-
-    if(y < center[1]) y++;
-    if(y > center[1]) y--;
-
-    if(z < center[2]) z++;
-    if(z > center[2]) z--;
+    // Calculate movement direction towards center
+    let newX = x;
+    let newY = y;
+    let newZ = z;
     
-    const newPos = [x, y, z];
-    if(World.getBlock(newPos[0], newPos[1], newPos[2]).getId() !== 'minecraft:air') return;
-    const key = `${x}, ${y}, ${z}`;
-    if(occupied.has(key)) return;
-    Chat.say(`/clone ${oldPos[0]} ${oldPos[1]} ${oldPos[2]} ${oldPos[0]} ${oldPos[1]} ${oldPos[2]} ${newPos[0]} ${newPos[1]} ${newPos[2]} replace`);
-    Chat.say(`/setblock ${oldPos[0]} ${oldPos[1]} ${oldPos[2]} air`);
+    if (x < centerX) newX++;
+    if (x > centerX) newX--;
     
-    occupied.set(key, true);
-    Time.sleep(1);
+    if (y < centerY) newY+=2;
+    if (y > centerY) newY+=2;
+    
+    if (z < centerZ) newZ++;
+    if (z > centerZ) newZ--;
+
+    // Check new position for validity
+    const newPosKey = `${newX},${newY},${newZ}`;
+    if (World.getBlock(newX, newY, newZ).getId() !== 'minecraft:air' || occupied.has(newPosKey)) {
+        return;
+    }
+
+    // Move the block
+    Chat.say(`/clone ${x} ${y} ${z} ${x} ${y} ${z} ${newX} ${newY} ${newZ} replace move`);
+
+    // Mark the new position as occupied
+    occupied.add(newPosKey);
 }
 
+function implode(centerX, centerY, centerZ, radius) {
+    const occupied = new Set();
 
-function scanCubeInwards(centerX, centerY, centerZ, radius) {
-    const center = [centerX, centerY, centerZ];
-    let occupied = new Map();
-    
-    for (let a = 0; a <= radius; a++) {
-        const minValue = -a;
-        const maxValue = a;
-        for (let b = minValue; b <= maxValue; b++) {
-            for (let c = minValue; c <= maxValue; c++) {
-                moveBlock(centerX + a, centerY + b, centerZ + c, center, occupied);
-                moveBlock(centerX - a, centerY - b, centerZ - c, center, occupied);
-                moveBlock(centerX + b, centerY + a, centerZ + c, center, occupied);
-                moveBlock(centerX - b, centerY - a, centerZ - c, center, occupied);
-                moveBlock(centerX + b, centerY + c, centerZ + a, center, occupied);
-                moveBlock(centerX - b, centerY - c, centerZ - a, center, occupied);
-                
+    // Process blocks from the outside in, layer by layer
+    for (let layer = radius; layer > 0; layer--) {
+        for (let x = -layer; x <= layer; x++) {
+            for (let y = -layer; y <= layer; y++) {
+                for (let z = -layer; z <= layer; z++) {
+                    if (Math.abs(x) === layer || Math.abs(y) === layer || Math.abs(z) === layer) {
+                        moveBlockTowardsCenter(centerX + x, centerY + y, centerZ + z, centerX, centerY, centerZ, occupied);
+                    }
+                }
             }
         }
+        // Add a delay to visually show the implosion step by step
+        //Time.sleep(1);
     }
 }
-
-
 
 function main() {
-    const radius = 5;
-    const inwards = false;
+    const radius = 50;  // The radius of the implosion
+    const repeatCount = 10;  // Number of times the implosion effect repeats
+    const delayBetweenImplosions = 0;  // Delay in milliseconds between each implosion
+
     const center = Player.rayTraceBlock(1000, false);
-    for (let b = 0; b <= 10; b++) {
-        
-        const blockX = center.getX();
-        const blockY = center.getY();
-        const blockZ = center.getZ();
-        scanCubeInwards(blockX, blockY, blockZ, radius);
-        Time.sleep(100);
+
+    const centerX = center.getX();
+    const centerY = center.getY();
+    const centerZ = center.getZ();
+
+    for (let i = 0; i < repeatCount; i++) {
+        implode(centerX, centerY, centerZ, radius);
+
+        // Delay between each implosion to allow for reset or visualization
+        Time.sleep(delayBetweenImplosions);
     }
 }
 
 
+const startTime = new Date().getTime() / 1000; // record start time in seconds
 main();
+const endTime = new Date().getTime() / 1000; // record end time in seconds
+const totalTime = endTime - startTime; // calculate total time spent in seconds
+Chat.log("Total time spent: " + totalTime + " seconds");
