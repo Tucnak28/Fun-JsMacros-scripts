@@ -1,4 +1,8 @@
-if (event.text.getString().includes("Could not set the block")) {
-    //event.text = null;
-    event.cancel();
+const banned = ["(/vote)", "vytvořil GAMBU", "/lottery buy", "(/levels)"];
+
+for (const ban of banned) {
+    if (event.text.getString().includes(ban)) {
+        event.cancel();
+        break;
+    }
 }
