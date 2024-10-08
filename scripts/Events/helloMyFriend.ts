@@ -1,9 +1,9 @@
 // Important Variables
-const friends = ["Itskeldan", "Xpipos", "GiantAlexis"]; // List of friends to greet
+const friends = ["Itskeldan", "Xpipos", "GiantAlexis", "MCZahyCZ", "Japkylcz", "mejlos111", "janko1559"]; // List of friends to greet
 const minDelayTime = 3000; // Minimum sleep time (in milliseconds) before greeting
 const maxDelayTime = 15000; // Maximum sleep time (in milliseconds) before greeting
-const cooldownInMinutes = 90; // cooldown in minutes
-const greetings = ["o/", "cc", "čau"]; // Array of possible greetings
+const cooldownInMinutes = 300; // cooldown in minutes
+const greetings = ["o/", "cc", "čau", "yo", "čus"]; // Array of possible greetings
 
 
 
