@@ -27,6 +27,7 @@ const isVisibleMethod = Reflection.getDeclaredMethod(
 );
 isVisibleMethod.setAccessible(true);
 
+
 // Get the obfuscated fields for minX, minY, minZ, maxX, maxY, and maxZ from class_238 (Box)
 const minXField = Reflection.getDeclaredField(Java.type("net.minecraft.class_238"), "field_1323");
 minXField.setAccessible(true);
@@ -45,6 +46,7 @@ maxYField.setAccessible(true);
 
 const maxZField = Reflection.getDeclaredField(Java.type("net.minecraft.class_238"), "field_1324");
 maxZField.setAccessible(true);
+
 
 
 
@@ -77,7 +79,7 @@ if (entity) {
     while (true) {
         const player = Player.getPlayer();
         let frustum = frustumField.get(worldRenderer);
-        
+
         // Use the frustum to check if the entity is visible
         state = isEntityVisibleToOtherPlayer(frustum, entity);
         // Check if the visibility state has changed
