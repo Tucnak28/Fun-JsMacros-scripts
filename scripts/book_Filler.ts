@@ -1,25 +1,35 @@
 const inv = Player.openInventory();
 
-const slots = inv.findItem("minecraft:writable_book");
+while (1) {
+    let slots = inv.findItem("minecraft:writable_book");
 
-for (const slot in slots) {
+    let i = 0;
+    while (i < slots.length) {
 
-    const nbt = inv.getSlot(slots[slot]).getNBT();
+        const slot = slots[i];
+        const nbt = inv.getSlot(slot).getNBT();
 
-    try {
-        nbt.asCompoundHelper().get("components").asCompoundHelper();
-    } catch (error) {
-        inv.swap(slots[slot], 36);
+        try {
+            nbt.asCompoundHelper().get("components").asCompoundHelper();
+        } catch (error) {
+            if (slot != 36) inv.swap(slot, 36);
+        
+            Chat.say("/bookcopy import 20Pages");
 
-        Chat.say("/bookcopy import 20Pages");
+            Time.sleep(600);
+            inv.dropSlot(36);
 
-        Time.sleep(600);
-        inv.swap(slots[slot], 36);
+            Time.sleep(600);
 
-        Time.sleep(600);
+            // Recheck slots after actions
+            slots = inv.findItem("minecraft:writable_book"); 
+            i = -1; // Reset loop to ensure updated slots are checked
+        }
+
+        i++;
     }
 
+    Time.sleep(2000);
 }
 
 Chat.log("!!Ready!!");
-
