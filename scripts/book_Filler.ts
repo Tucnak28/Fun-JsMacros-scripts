@@ -1,7 +1,14 @@
-const inv = Player.openInventory();
+let inv = Player.openInventory();
 
 while (1) {
     let slots = inv.findItem("minecraft:writable_book");
+    const held = inv.getHeld();
+
+    if(held.getItemId() != "minecraft:air") {
+        inv.closeAndDrop();
+        inv = Player.openInventory();
+    }
+
 
     let i = 0;
     while (i < slots.length) {
@@ -9,8 +16,13 @@ while (1) {
         const slot = slots[i];
         const nbt = inv.getSlot(slot).getNBT();
 
+        
+
         try {
             nbt.asCompoundHelper().get("components").asCompoundHelper();
+
+            inv.dropSlot(slot);
+
         } catch (error) {
             if (slot != 36) inv.swap(slot, 36);
         
