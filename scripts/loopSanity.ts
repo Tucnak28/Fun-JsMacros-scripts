@@ -6,7 +6,7 @@ function restart() {
     Chat.say("/kill @e[type=item]");
     //Chat.say("/clear");
     Time.sleep(100);
-    Chat.say("/tp 929 64 1035");
+    Chat.say("/tp 800 -60 1203");
     Time.sleep(100);
     Chat.say("/effect give @a instant_health 1 10");
     Chat.say("/effect give @a minecraft:saturation 1 2");
@@ -22,9 +22,6 @@ function playAllReplays() {
 }
 
 function loopCycle() {
-    restart();
-
-
     Chat.say("/mocap recording stop _");
     Time.sleep(50);
     // Clear any previous recordings & playback before starting
@@ -32,12 +29,16 @@ function loopCycle() {
     Time.sleep(50);
     Chat.say("/mocap playback stop_all");
     Time.sleep(50);
+
+    restart();
+    playAllReplays();
+
     
     // Start recording immediately when the script starts
     Chat.say(`/mocap recording start @a`);
     
     do {
-        if (Date.now() - startTime >= 150000) { // 20 seconds elapsed
+        if (Date.now() - startTime >= 30000) { // 20 seconds elapsed
             loopCount++;
             Chat.say("/mocap recording stop");
             Time.sleep(50);
