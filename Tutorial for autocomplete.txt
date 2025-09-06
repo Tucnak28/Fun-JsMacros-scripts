@@ -1,2 +1,0 @@
-1) create script.ts in scripts
-2) profit, you can then run .ts files in minecraft

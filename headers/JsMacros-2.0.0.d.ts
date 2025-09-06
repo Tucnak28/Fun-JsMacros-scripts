@@ -446,7 +446,7 @@ declare namespace Events {
     }
 
     interface OpenScreen extends BaseEvent {
-        readonly screen: Packages.xyz.wagyourtail.jsmacros.client.api.classes.render.IScreen;
+        readonly screen: Packages.xyz.wagyourtail.jsmacros.client.api.classes.render.IScreen | null;
         readonly screenName: ScreenName;
     }
 
@@ -663,6 +663,7 @@ declare namespace Events {
     interface SignEdit extends BaseEvent, Cancellable {
         readonly pos: Packages.xyz.wagyourtail.jsmacros.client.api.classes.math.Pos3D;
         closeScreen: boolean;
+        front: boolean;
         signText: JavaList<string> | null;
     }
 
@@ -1838,7 +1839,7 @@ declare namespace JavaWrapper {
 
 /**
  * Functions that interact directly with JsMacros or Events.  
- *  <pd
+ *
  * @author Wagyourtail
  */
 declare namespace JsMacros {
@@ -1952,7 +1953,7 @@ declare namespace JsMacros {
      * @see IEventListener
      * @since 1.9.1
      */
-    function on<E extends keyof Events>(event: E, filterer: EventFilterers[E], callback: MethodWrapper<Events[E], EventContainer>): Packages.xyz.wagyourtail.jsmacros.core.event.IEventListener;
+    function on<E extends keyof Events>(event: E, filterer: EventFilterer, callback: MethodWrapper<Events[E], EventContainer>): Packages.xyz.wagyourtail.jsmacros.core.event.IEventListener;
 
     /**
      * Creates a listener for an event, this function can be more efficient that running a script file when used properly.
@@ -1960,7 +1961,7 @@ declare namespace JsMacros {
      * @see IEventListener
      * @since 1.9.1
      */
-    function on<E extends keyof Events>(event: E, filterer: EventFilterers[E], joined: boolean, callback: MethodWrapper<Events[E], EventContainer>): Packages.xyz.wagyourtail.jsmacros.core.event.IEventListener;
+    function on<E extends keyof Events>(event: E, filterer: EventFilterer, joined: boolean, callback: MethodWrapper<Events[E], EventContainer>): Packages.xyz.wagyourtail.jsmacros.core.event.IEventListener;
 
     /**
      * Creates a single-run listener for an event, this function can be more efficient that running a script file when used properly.
@@ -2045,13 +2046,13 @@ declare namespace JsMacros {
      * @throws InterruptedException
      * @since 1.5.0 [citation needed]
      */
-    function waitForEvent<E extends keyof Events>(event: E, filter: MethodWrapper<Events[E], undefined, boolean>): FJsMacros$EventAndContext<Events[E]>;
+    function waitForEvent<E extends keyof Events>(event: E, filter: MethodWrapper<Events[E], undefined, boolean> | null): FJsMacros$EventAndContext<Events[E]>;
 
     /**
      * @throws InterruptedException
      * @since 1.9.0
      */
-    function waitForEvent<E extends keyof Events>(event: E, join: boolean, filter: MethodWrapper<Events[E], undefined, boolean>): FJsMacros$EventAndContext<Events[E]>;
+    function waitForEvent<E extends keyof Events>(event: E, join: boolean, filter: MethodWrapper<Events[E], undefined, boolean> | null): FJsMacros$EventAndContext<Events[E]>;
 
     /**
      * waits for an event. if this thread is bound to an event already, this will release current lock.
@@ -2062,7 +2063,7 @@ declare namespace JsMacros {
      * @throws InterruptedException
      * @since 1.5.0
      */
-    function waitForEvent<E extends keyof Events>(event: E, filter: MethodWrapper<Events[E], undefined, boolean>, runBeforeWaiting: MethodWrapper<JavaObject, JavaObject, JavaObject>): FJsMacros$EventAndContext<Events[E]>;
+    function waitForEvent<E extends keyof Events>(event: E, filter: MethodWrapper<Events[E], undefined, boolean> | null, runBeforeWaiting: MethodWrapper<JavaObject, JavaObject, JavaObject> | null): FJsMacros$EventAndContext<Events[E]>;
 
     /**
      * waits for an event. if this thread is bound to an event already, this will release current lock.
@@ -2073,7 +2074,7 @@ declare namespace JsMacros {
      * @throws InterruptedException
      * @since 1.9.0
      */
-    function waitForEvent<E extends keyof Events>(event: E, join: boolean, filter: MethodWrapper<Events[E], undefined, boolean>, runBeforeWaiting: MethodWrapper<JavaObject, JavaObject, JavaObject>): FJsMacros$EventAndContext<Events[E]>;
+    function waitForEvent<E extends keyof Events>(event: E, join: boolean, filter: MethodWrapper<Events[E], undefined, boolean> | null, runBeforeWaiting: MethodWrapper<JavaObject, JavaObject, JavaObject> | null): FJsMacros$EventAndContext<Events[E]>;
 
     /**
      * @return a list of script-added listeners.
@@ -2276,11 +2277,21 @@ declare namespace Player {
     function rayTraceEntity(distance: int): Packages.xyz.wagyourtail.jsmacros.client.api.helpers.world.entity.EntityHelper<any> | null;
 
     /**
-     * Write to a sign screen if a sign screen is currently open.
-     * @return of success.
+     * Write to a sign screen if a sign screen is currently open.<br>  
+     *  If the given string is null, the text will remain unchanged.
+     * @return of success (sign screen is open).
      * @since 1.2.2
      */
-    function writeSign(l1: string, l2: string, l3: string, l4: string): boolean;
+    function writeSign(l1: string | null, l2: string | null, l3: string | null, l4: string | null): boolean;
+
+    /**
+     * Write a line to a sign screen if a sign screen is currently open.
+     * @param index the index of the message. should be in between 0 and 3
+     * @param message the message to write
+     * @return of success (sign screen is open).
+     * @since 2.0.0
+     */
+    function writeSign(index: int, message: string): boolean;
 
     /**
      * @param callback calls your method as a {@link Consumer}<{@link TextHelper}>
@@ -3088,7 +3099,7 @@ declare namespace World {
      * @return all entities in the render distance, that match the specified entity type.
      * @since 1.8.4
      */
-    function getEntities<E extends CanOmitNamespace<EntityId>>(...types: E[]): JavaList<EntityTypeFromId<E>> | null;
+    function getEntities<E extends CanOmitNamespace<EntityId>>(...types: JavaVarArgs<E>): JavaList<EntityTypeFromId<E>> | null;
 
     /**
      * @param distance the maximum distance to search for entities
@@ -3103,7 +3114,7 @@ declare namespace World {
      * @return a list of entities within the specified distance to the player, that match the specified entity type.
      * @since 1.8.4
      */
-    function getEntities<E extends CanOmitNamespace<EntityId>>(distance: double, ...types: E[]): JavaList<EntityTypeFromId<E>> | null;
+    function getEntities<E extends CanOmitNamespace<EntityId>>(distance: double, ...types: JavaVarArgs<E>): JavaList<EntityTypeFromId<E>> | null;
 
     /**
      * @param filter the entity filter
@@ -22557,6 +22568,7 @@ declare namespace Packages {
                 processors(arg0: JavaList<javax.annotation.processing.Processor>): CompileOptions;
                 options(...arg0: JavaVarArgs<string>): CompileOptions;
                 options(arg0: JavaList<string>): CompileOptions;
+                classLoader(arg0: java.lang.ClassLoader): CompileOptions;
 
             }
 
@@ -22566,6 +22578,8 @@ declare namespace Packages {
 
                 static compile(arg0: string, arg1: string): Reflect;
                 static compile(arg0: string, arg1: string, arg2: CompileOptions): Reflect;
+                static process(arg0: string, arg1: string): void;
+                static process(arg0: string, arg1: string, arg2: CompileOptions): void;
                 /** @deprecated */
                 static on(arg0: string): Reflect;
                 /** @deprecated */
@@ -23417,6 +23431,22 @@ declare namespace Packages {
                         class RegistryHelper extends java.lang.Object {
                             static readonly class: JavaClass<RegistryHelper>;
                             /** @deprecated */ static prototype: undefined;
+
+                            /**
+                             * implemented in mixins to make this equal to any owner. used by NBT_PASS_OPS
+                             */
+                            static readonly ALL_EQUALITY_OWNER: /* net.minecraft.registry.entry.RegistryEntryOwner<any> */ any;
+
+                            /**
+                             * for encoding unlimited data into NbtElement for getNBT methods
+                             */
+                            static readonly NBT_OPS_UNLIMITED: /* net.minecraft.registry.RegistryOps<net.minecraft.nbt.NbtElement> */ any;
+
+                            /**
+                             * for encoding unlimited data into NbtElement for getNBT methods<br>  
+                             *  for methods accepts WrapperLookup and only uses WrapperLookup#getOps()
+                             */
+                            static readonly WRAPPER_LOOKUP_UNLIMITED: /* net.minecraft.registry.RegistryWrapper$WrapperLookup */ any;
 
                             static parseIdentifier(id: string): /* net.minecraft.util.Identifier */ any;
                             static parseNameSpace(id: string): string;
@@ -24795,7 +24825,7 @@ declare namespace Packages {
                                  *  empty slots.
                                  * @since 1.8.4
                                  */
-                                findFreeSlot(...mapIdentifiers: InvMapId[]): number;
+                                findFreeSlot(...mapIdentifiers: JavaVarArgs<InvMapId>): number;
 
                                 /**
                                  * @return a map of all item ids and their total count inside the inventory.
@@ -24814,7 +24844,7 @@ declare namespace Packages {
                                  * @return a list of all items in the given inventory sections.
                                  * @since 1.8.4
                                  */
-                                getItems(...mapIdentifiers: InvMapId[]): JavaList<xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemStackHelper>;
+                                getItems(...mapIdentifiers: JavaVarArgs<InvMapId>): JavaList<xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemStackHelper>;
 
                                 /**
                                  * @param item the item to search for
@@ -24835,7 +24865,7 @@ declare namespace Packages {
                                  * @return all slots indexes in the given inventory sections.
                                  * @since 1.8.4
                                  */
-                                getSlots(...mapIdentifiers: InvMapId[]): JavaArray<number>;
+                                getSlots(...mapIdentifiers: JavaVarArgs<InvMapId>): JavaArray<number>;
 
                                 /**
                                  * @return the index of the selected hotbar slot.
@@ -24928,7 +24958,7 @@ declare namespace Packages {
                                  * checks if this inventory type equals to any of the specified types<br>
                                  * @since 1.9.0
                                  */
-                                is<T extends ScreenName>(...anyOf: T[]): this is T extends keyof InvNameToTypeMap ? InvNameToTypeMap[keyof InvNameToTypeMap] extends InvNameToTypeMap[T] ? Inventory : InvNameToTypeMap[T] : this;
+                                is<T extends ScreenName>(...anyOf: JavaVarArgs<T>): this is T extends keyof InvNameToTypeMap ? InvNameToTypeMap[keyof InvNameToTypeMap] extends InvNameToTypeMap[T] ? Inventory : InvNameToTypeMap[T] : this;
 
                                 /**
                                  * @return the inventory mappings different depending on the type of open container/inventory.
@@ -25777,22 +25807,22 @@ declare namespace Packages {
                                  * @see IDraw2D.addItem(int, int, String)
                                  * @since 1.0.5
                                  */
-                                addItem(x: int, y: int, id: ItemId): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
-                                addItem(x: int, y: int, zIndex: int, id: ItemId): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @see IDraw2D.addItem(int, int, String, boolean)
                                  * @since 1.2.0
                                  */
-                                addItem(x: int, y: int, id: ItemId, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
-                                addItem(x: int, y: int, zIndex: int, id: ItemId, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @see IDraw2D.addItem(int, int, String, boolean, double, double)
                                  * @since 1.2.0
                                  */
-                                addItem(x: int, y: int, id: ItemId, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
-                                addItem(x: int, y: int, zIndex: int, id: ItemId, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @see IDraw2D.addItem(int, int, ItemStackHelper)
@@ -26465,7 +26495,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.2.7
                                  */
-                                addItem(x: int, y: int, id: ItemId): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -26475,7 +26505,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.4.0
                                  */
-                                addItem(x: int, y: int, zIndex: int, id: ItemId): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -26485,7 +26515,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.2.7
                                  */
-                                addItem(x: int, y: int, id: ItemId, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -26496,7 +26526,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.4.0
                                  */
-                                addItem(x: int, y: int, zIndex: int, id: ItemId, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>, overlay: boolean): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -26508,7 +26538,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.2.7
                                  */
-                                addItem(x: int, y: int, id: ItemId, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, id: CanOmitNamespace<ItemId>, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -26521,7 +26551,7 @@ declare namespace Packages {
                                  * @return added item
                                  * @since 1.4.0
                                  */
-                                addItem(x: int, y: int, zIndex: int, id: ItemId, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
+                                addItem(x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>, overlay: boolean, scale: double, rotation: double): xyz.wagyourtail.jsmacros.client.api.classes.render.components.Item;
 
                                 /**
                                  * @param x left most corner
@@ -28177,7 +28207,7 @@ declare namespace Packages {
                                     static readonly class: JavaClass<Item>;
                                     /** @deprecated */ static prototype: undefined;
 
-                                    constructor (x: int, y: int, zIndex: int, id: ItemId, overlay: boolean, scale: double, rotation: float);
+                                    constructor (x: int, y: int, zIndex: int, id: CanOmitNamespace<ItemId>, overlay: boolean, scale: double, rotation: float);
                                     constructor (x: int, y: int, zIndex: int, i: xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemStackHelper, overlay: boolean, scale: double, rotation: float);
                                     constructor (x: int, y: int, zIndex: int, itemStack: xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemStackHelper, overlay: boolean, scale: double, rotation: float, ovText: string);
 
@@ -35778,7 +35808,7 @@ declare namespace Packages {
                                  *  enchanted with the specified enchantment.
                                  * @since 1.8.4
                                  */
-                                getEnchantment(id: EnchantmentId): EnchantmentHelper | null;
+                                getEnchantment(id: CanOmitNamespace<EnchantmentId>): EnchantmentHelper | null;
 
                                 /**
                                  * @param enchantment the enchantment to check for
@@ -35882,7 +35912,7 @@ declare namespace Packages {
                                  */
                                 getMaxCount(): number;
                                 /** @since 1.1.6, was a {@link String} until 1.5.1 */
-                                getNBT(): xyz.wagyourtail.jsmacros.client.api.helpers.NBTElementHelper | null;
+                                getNBT(): NBTElementHelper$NBTCompoundHelper;
                                 /** @since 1.1.3 */
                                 getCreativeTab(): JavaList<xyz.wagyourtail.jsmacros.client.api.helpers.TextHelper>;
                                 /** @deprecated */
@@ -36028,7 +36058,7 @@ declare namespace Packages {
                                 constructor (base: /* net.minecraft.recipe.RecipeEntry<any> */ any, syncId: int);
 
                                 /** @since 1.3.1 */
-                                getId(): string;
+                                getId(): RecipeId;
 
                                 /**
                                  * get ingredients list
@@ -36064,7 +36094,7 @@ declare namespace Packages {
                                  * @return the type of this recipe.
                                  * @since 1.8.4
                                  */
-                                getType(): string;
+                                getType(): RecipeTypeId;
 
                                 /**
                                  * @return `true` if the recipe can be crafted with the current inventory, `false`
@@ -36487,6 +36517,8 @@ declare namespace Packages {
                                 static readonly class: JavaClass<ClickableWidgetHelper<any, any>>;
                                 /** @deprecated */ static prototype: undefined;
 
+                                static clickedOn(screen: xyz.wagyourtail.jsmacros.client.api.classes.render.IScreen): void;
+
                                 constructor <B extends ClickableWidgetHelper<B, T>, T extends /* net.minecraft.client.gui.widget.ClickableWidget */ any>(btn: T);
                                 constructor <B extends ClickableWidgetHelper<B, T>, T extends /* net.minecraft.client.gui.widget.ClickableWidget */ any>(btn: T, zIndex: int);
 
@@ -36893,6 +36925,8 @@ declare namespace Packages {
                                 getPlayerScores(): JavaMap<string, number>;
                                 /** @since 1.8.0 */
                                 scoreToDisplayName(): JavaMap<number, xyz.wagyourtail.jsmacros.client.api.helpers.TextHelper>;
+                                /** @since 2.0.0 */
+                                getTexts(): JavaList<xyz.wagyourtail.jsmacros.client.api.helpers.TextHelper>;
                                 /** @since 1.7.0 */
                                 getKnownPlayers(): JavaList<string>;
                                 /** @since 1.8.0 */
@@ -37796,7 +37830,7 @@ declare namespace Packages {
                                  *  `false` otherwise.
                                  * @since 1.8.4
                                  */
-                                containsAny(...blocks: CanOmitNamespace<BlockId>[]): boolean;
+                                containsAny(...blocks: JavaVarArgs<CanOmitNamespace<BlockId>>): boolean;
 
                                 /**
                                  * @param blocks the blocks to search for
@@ -37804,7 +37838,7 @@ declare namespace Packages {
                                  *  otherwise.
                                  * @since 1.8.4
                                  */
-                                containsAll(...blocks: CanOmitNamespace<BlockId>[]): boolean;
+                                containsAll(...blocks: JavaVarArgs<CanOmitNamespace<BlockId>>): boolean;
 
                                 /**
                                  * @return a map of the raw heightmap data.
@@ -38738,6 +38772,14 @@ declare namespace Packages {
                                 getDusted(): number;
                                 /** @since 1.9.0 */
                                 isCracked(): boolean;
+                                /** @since 2.0.0 */
+                                isCrafting(): boolean;
+                                /** @since 2.0.0 */
+                                getTrialSpawnerState(): string;
+                                /** @since 2.0.0 */
+                                getVaultState(): string;
+                                /** @since 2.0.0 */
+                                isOminous(): boolean;
 
                             }
 
@@ -39204,7 +39246,7 @@ declare namespace Packages {
                                      * checks if this entity type equals to any of the specified types<br>
                                      * @since 1.9.0
                                      */
-                                    is<E extends CanOmitNamespace<EntityId>>(...anyOf: E[]): this is EntityTypeFromId<E>;
+                                    is<E extends CanOmitNamespace<EntityId>>(...anyOf: JavaVarArgs<E>): this is EntityTypeFromId<E>;
 
                                     /**
                                      * @return if the entity has the glowing effect.
@@ -39862,7 +39904,7 @@ declare namespace Packages {
                                     /**
                                      * @return trade offer as nbt tag
                                      */
-                                    getNBT(): xyz.wagyourtail.jsmacros.client.api.helpers.NBTElementHelper<any>;
+                                    getNBT(): NBTElementHelper$NBTCompoundHelper;
 
                                     /**
                                      * @return current number of uses
@@ -43156,6 +43198,8 @@ declare namespace Packages {
                     }
                     interface Extension {
 
+                        getExtensionName(): string;
+
                         /**
                          * @return the *minimum* version of the jsMacros core that this extension is compatible with.
                          * @since 1.9.0
@@ -43168,35 +43212,8 @@ declare namespace Packages {
                          */
                         maxCoreVersion(): string;
                         init(): void;
-                        getPriority(): number;
-                        getLanguageImplName(): string;
-                        extensionMatch(file: java.io.File): Extension$ExtMatch;
-                        defaultFileExtension(): string;
-
-                        /**
-                         * @return a single static instance of the language definition
-                         */
-                        getLanguage(runner: xyz.wagyourtail.jsmacros.core.Core<any, any>): xyz.wagyourtail.jsmacros.core.language.BaseLanguage<any, any>;
-                        getLibraries(): JavaSet<JavaClass<xyz.wagyourtail.jsmacros.core.library.BaseLibrary>>;
                         getDependencies(): JavaSet<java.net.URL>;
-                        wrapException(t: java.lang.Throwable): xyz.wagyourtail.jsmacros.core.language.BaseWrappedException<any>;
                         getTranslations(lang: string): JavaMap<string, string>;
-                        isGuestObject(o: any): boolean;
-
-                    }
-
-                    abstract class Extension$ExtMatch extends java.lang.Enum<Extension$ExtMatch> {
-                        static readonly class: JavaClass<Extension$ExtMatch>;
-                        /** @deprecated */ static prototype: undefined;
-
-                        static readonly NOT_MATCH: Extension$ExtMatch;
-                        static readonly MATCH: Extension$ExtMatch;
-                        static readonly MATCH_WITH_NAME: Extension$ExtMatch;
-
-                        static values(): JavaArray<Extension$ExtMatch>;
-                        static valueOf(name: string): Extension$ExtMatch;
-
-                        isMatch(): boolean;
 
                     }
 
@@ -43208,16 +43225,68 @@ declare namespace Packages {
 
                         isExtensionLoaded(name: string): boolean;
                         notLoaded(): boolean;
-                        getHighestPriorityExtension(): Extension;
+                        getHighestPriorityExtension(): LanguageExtension;
                         getAllExtensions(): JavaSet<Extension>;
-                        getExtensionForFile(file: java.io.File): Extension | null;
-                        getExtensionForName(lang: string): Extension;
+                        getAllLanguageExtensions(): JavaSet<LanguageExtension>;
+                        getAllLibraryExtensions(): JavaSet<LibraryExtension>;
+                        getExtensionForFile(file: java.io.File): LanguageExtension | null;
+                        getExtensionForName(extName: string): Extension;
                         loadExtensions(): void;
                         isGuestObject(obj: any): boolean;
 
                     }
 
-                    export { Extension, Extension$ExtMatch, ExtensionLoader }
+                    abstract class LanguageExtension extends java.lang.Interface {
+                        static readonly class: JavaClass<LanguageExtension>;
+                        /** @deprecated */ static prototype: undefined;
+                    }
+                    interface LanguageExtension extends Extension {
+
+                        getPriority(): number;
+                        extensionMatch(file: java.io.File): LanguageExtension$ExtMatch;
+                        defaultFileExtension(): string;
+
+                        /**
+                         * @return a single static instance of the language definition
+                         */
+                        getLanguage(runner: xyz.wagyourtail.jsmacros.core.Core<any, any>): xyz.wagyourtail.jsmacros.core.language.BaseLanguage<any, any>;
+                        wrapException(t: java.lang.Throwable): xyz.wagyourtail.jsmacros.core.language.BaseWrappedException<any>;
+                        isGuestObject(o: any): boolean;
+
+                    }
+
+                    abstract class LanguageExtension$ExtMatch extends java.lang.Enum<LanguageExtension$ExtMatch> {
+                        static readonly class: JavaClass<LanguageExtension$ExtMatch>;
+                        /** @deprecated */ static prototype: undefined;
+
+                        static readonly NOT_MATCH: LanguageExtension$ExtMatch;
+                        static readonly MATCH: LanguageExtension$ExtMatch;
+                        static readonly MATCH_WITH_NAME: LanguageExtension$ExtMatch;
+
+                        static values(): JavaArray<LanguageExtension$ExtMatch>;
+                        static valueOf(name: string): LanguageExtension$ExtMatch;
+
+                        isMatch(): boolean;
+
+                    }
+
+                    abstract class LibraryExtension extends java.lang.Interface {
+                        static readonly class: JavaClass<LibraryExtension>;
+                        /** @deprecated */ static prototype: undefined;
+                    }
+                    interface LibraryExtension extends Extension {
+
+                        getLibraries(): JavaSet<JavaClass<xyz.wagyourtail.jsmacros.core.library.BaseLibrary>>;
+
+                    }
+
+                    export {
+                        Extension,
+                        ExtensionLoader,
+                        LanguageExtension,
+                        LanguageExtension$ExtMatch,
+                        LibraryExtension
+                    }
 
                 }
 
@@ -44620,7 +44689,6 @@ type EventContainer<T extends Packages.xyz.wagyourtail.jsmacros.core.language.Ba
 type EventFilterer = Packages.xyz.wagyourtail.jsmacros.core.event.EventFilterer;
 type EventFilterer$Compound = Packages.xyz.wagyourtail.jsmacros.core.event.EventFilterer$Compound;
 type Extension = Packages.xyz.wagyourtail.jsmacros.core.extensions.Extension;
-type Extension$ExtMatch = Packages.xyz.wagyourtail.jsmacros.core.extensions.Extension$ExtMatch;
 type ExtensionLoader = Packages.xyz.wagyourtail.jsmacros.core.extensions.ExtensionLoader;
 type FJsMacros$EventAndContext<E extends Events.BaseEvent = any> = Packages.xyz.wagyourtail.jsmacros.core.library.impl.FJsMacros$EventAndContext<E>;
 type FallingBlockEntityHelper = Packages.xyz.wagyourtail.jsmacros.client.api.helpers.world.entity.specialized.other.FallingBlockEntityHelper;
@@ -44673,8 +44741,11 @@ type ItemFrameEntityHelper = Packages.xyz.wagyourtail.jsmacros.client.api.helper
 type ItemHelper = Packages.xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemHelper;
 type ItemStackHelper = Packages.xyz.wagyourtail.jsmacros.client.api.helpers.inventory.ItemStackHelper;
 type JsMacrosThreadPool = Packages.xyz.wagyourtail.jsmacros.core.threads.JsMacrosThreadPool;
+type LanguageExtension = Packages.xyz.wagyourtail.jsmacros.core.extensions.LanguageExtension;
+type LanguageExtension$ExtMatch = Packages.xyz.wagyourtail.jsmacros.core.extensions.LanguageExtension$ExtMatch;
 type Library = Packages.xyz.wagyourtail.jsmacros.core.library.Library;
 type LibraryBuilder = Packages.xyz.wagyourtail.jsmacros.core.library.impl.classes.LibraryBuilder;
+type LibraryExtension = Packages.xyz.wagyourtail.jsmacros.core.extensions.LibraryExtension;
 type LibraryRegistry = Packages.xyz.wagyourtail.jsmacros.core.library.LibraryRegistry;
 type Line = Packages.xyz.wagyourtail.jsmacros.client.api.classes.render.components.Line;
 type Line$Builder = Packages.xyz.wagyourtail.jsmacros.client.api.classes.render.components.Line$Builder;
